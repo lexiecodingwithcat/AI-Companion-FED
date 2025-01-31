@@ -13,7 +13,9 @@ function App() {
     const botReply = await getAIResponse(input);
     setMessages([...messages, userMessage, { role: "bot", text: botReply }]);
     setInput("");
-    speakText(botReply);
+
+    // TTS disabled temporarily since botReply will be stream type
+    // speakText(botReply);
   }
 
   const handleKeyDown = (e) => {
