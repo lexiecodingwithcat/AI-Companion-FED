@@ -1,0 +1,9 @@
+POST https://c7a9-2001-56a-77dc-bc00-7604-840d-f3ff-a305.ngrok-free.app/stream_chat HTTP/1.1
+content-type: application/json
+
+{
+  "message": "what's your model and temperature?",
+  "model": "deepseek-r1:1.5b",
+  "max_tokens": 512,
+  "temperature": 0.7
+}
