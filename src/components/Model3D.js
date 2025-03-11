@@ -70,21 +70,56 @@ export default function Model3D({ character, emotion = 'idle' }) {
   
   // 根據情緒獲取動畫 URL
   const getAnimationPath = () => {
-    // 基於情緒選擇不同的動畫
+  // 確定是否為女性角色
+  const isFemale = ['sophia', 'mia', 'ava', 'emma'].includes(character.toLowerCase());
+  
+  // 根據性別和情緒選擇對應的動畫
+  if (isFemale) {
+    // 女性角色動畫
     switch(emotion.toLowerCase()) {
-      case 'happy':
-        return '/models/animations/M_Standing_Expressions_013.glb'; // 開心表情
-      case 'angry':
-        return '/models/animations/M_Standing_Expressions_013.glb'; // 生氣表情
-      case 'surprised':
-        return '/models/animations/M_Standing_Expressions_013.glb'; // 驚訝表情
+      case 'idle':
+        return '/models/animations/F_Standing_Idle_Variations_002.glb';
+      case 'talking':
+        return '/models/animations/F_Talking_Variations_001.glb';
       case 'dance':
-        return '/models/animations/M_Dances_004.glb'; // 舞蹈動畫
+        return '/models/animations/F_Dances_001.glb';
+      case 'walk':
+        return '/models/animations/F_Walk_003.glb';
+      case 'no':
+        return '/models/animations/M_Standing_Expressions_011.glb'; // 注意這裡使用M前綴
+      case 'idontknow':
+        return '/models/animations/M_Standing_Expressions_005.glb'; // 注意這裡使用M前綴
+      case 'thinking':
+        return '/models/animations/F_Talking_Variations_004.glb';
+      case 'greet':
+        return '/models/animations/M_Standing_Expressions_001.glb'; // 注意這裡使用M前綴
       default:
-        return '/models/animations/M_Standing_Idle_Neutral_01.glb'; // 閒置動畫
+        return '/models/animations/F_Standing_Idle_Variations_002.glb'; // 預設為閒置
     }
-  };
-
+  } else {
+    // 男性角色動畫
+    switch(emotion.toLowerCase()) {
+      case 'idle':
+        return '/models/animations/M_Standing_Idle_001.glb';
+      case 'talking':
+        return '/models/animations/M_Talking_Variations_002.glb';
+      case 'dance':
+        return '/models/animations/M_Dances_011.glb';
+      case 'walk':
+        return '/models/animations/M_Walk_001.glb';
+      case 'no':
+        return '/models/animations/M_Standing_Expressions_011.glb';
+      case 'idontknow':
+        return '/models/animations/M_Standing_Expressions_005.glb';
+      case 'thinking':
+        return '/models/animations/F_Talking_Variations_004.glb'; // 注意這裡使用F前綴
+      case 'greet':
+        return '/models/animations/M_Standing_Expressions_001.glb';
+      default:
+        return '/models/animations/M_Standing_Idle_001.glb'; // 預設為閒置
+    }
+  }
+};
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>

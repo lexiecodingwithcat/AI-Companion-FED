@@ -196,10 +196,15 @@ async function callOllamaAIWithEmotion(prompt, character) {
             }
             
             情緒代碼只能是以下之一：
-            - happy：當你感到開心、興奮或滿足時
-            - angry：當你感到不滿、失望或憤怒時
-            - surprised：當你感到驚訝或震驚時
-            - idle：當你處於中性情緒時`,
+            - idle：當你處於中性或放鬆狀態時
+            - talking：當你在積極交談時
+            - dance：當你感到非常開心或興奮時
+            - walk：當你提到移動或改變話題時
+            - no：當你表達否定或拒絕時
+            - idontknow：當你感到困惑或不確定時
+            - thinking：當你在思考或考慮問題時
+            - greet：當你打招呼或道別時
+          `,
           },
           {
             role: "user", // User prompt
@@ -251,23 +256,32 @@ async function callOllamaAIWithEmotion(prompt, character) {
 
 // 用於測試的模擬 AI 回應函數
 export function simulateAIResponse(prompt, character) {
-  // 簡單的測試回應
+  // 簡單的測試回應，使用與動畫匹配的情緒代碼
   const responses = [
-    { message: `我是${character}！很高興認識你！`, emotion: "happy" },
-    { message: "這讓我有點困惑...", emotion: "surprised" },
-    { message: "我不太同意這個觀點。", emotion: "angry" },
-    { message: "我理解你的意思。", emotion: "idle" }
+    { message: `我是${character}！很高興認識你！`, emotion: "greet" },
+    { message: "這讓我有點困惑...", emotion: "idontknow" },
+    { message: "我不太同意這個觀點。", emotion: "no" },
+    { message: "我理解你的意思。", emotion: "talking" },
+    { message: "讓我想一想...", emotion: "thinking" },
+    { message: "我很開心聽到這個！", emotion: "dance" },
+    { message: "我們可以一起討論這個問題。", emotion: "idle" }
   ];
   
   // 根據輸入選擇適當的回應
   const promptLower = prompt.toLowerCase();
   
-  if (promptLower.includes("你好") || promptLower.includes("嗨")) {
-    return responses[0];
-  } else if (promptLower.includes("?") || promptLower.includes("為什麼")) {
-    return responses[1];
-  } else if (promptLower.includes("不") || promptLower.includes("錯")) {
-    return responses[2];
+  if (promptLower.includes("你好") || promptLower.includes("嗨") || promptLower.includes("hi")) {
+    return responses[0]; // greet
+  } else if (promptLower.includes("?") || promptLower.includes("為什麼") || promptLower.includes("怎麼")) {
+    return responses[1]; // idontknow
+  } else if (promptLower.includes("不") || promptLower.includes("錯") || promptLower.includes("討厭")) {
+    return responses[2]; // no
+  } else if (promptLower.includes("認為") || promptLower.includes("覺得") || promptLower.includes("想")) {
+    return responses[4]; // thinking
+  } else if (promptLower.includes("開心") || promptLower.includes("高興") || promptLower.includes("喜歡")) {
+    return responses[5]; // dance
+  } else if (promptLower.includes("討論") || promptLower.includes("聊聊") || promptLower.includes("說說")) {
+    return responses[3]; // talking
   } else {
     // 隨機選擇一個回應
     return responses[Math.floor(Math.random() * responses.length)];
