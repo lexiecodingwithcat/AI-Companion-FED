@@ -551,7 +551,7 @@ export default function Chat() {
                 Would you like to continue chatting or clear this conversation?
               </p>
               <div className="text-center mt-3">
-                <span className="inline-block w-12 h-12 rounded-full bg-red-100 text-red-600 font-bold text-xl flex items-center justify-center">
+                <span className="w-12 h-12 rounded-full bg-red-100 text-red-600 font-bold text-xl flex items-center justify-center">
                   {countdownSeconds}
                 </span>
                 <p className="text-sm text-gray-500 mt-1">
