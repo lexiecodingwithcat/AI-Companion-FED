@@ -4,6 +4,42 @@ import Model3D from '../components/Model3D';  // 導入 3D 模型組件
 import { getAIResponseWithEmotion, simulateAIResponse } from '../services/aiService';
 import { speakText, stopSpeech } from '../services/ttsService';
 
+// 內聯SVG圖標組件
+const SendIcon = () => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="20" 
+    height="20" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="m22 2-7 20-4-9-9-4Z" />
+    <path d="M22 2 11 13" />
+  </svg>
+);
+
+const MicIcon = () => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="20" 
+    height="20" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+    <line x1="12" x2="12" y1="19" y2="22" />
+  </svg>
+);
+
 export default function Chat() {
   const [messages, setMessages] = useState([
     { id: 1, text: 'Hi, my name is Sophia!', sender: 'ai', emotion: 'happy' },
@@ -12,6 +48,9 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [currentEmotion, setCurrentEmotion] = useState('happy');  // 設置初始情緒
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [voiceState, setVoiceState] = useState('inactive'); // 'inactive', 'listening', 'processing', 'error'
+  const [voiceError, setVoiceError] = useState('');
   
   // 倒數焚燒功能相關狀態
   const [isIdle, setIsIdle] = useState(false);
@@ -22,6 +61,7 @@ export default function Chat() {
   const idleTimerRef = useRef(null);
   const countdownTimerRef = useRef(null);
   const lastActivityRef = useRef(Date.now());
+  const recognitionRef = useRef(null);
   
   const location = useLocation();
   const friend = location.state?.friend || 'sophia';
@@ -176,6 +216,13 @@ export default function Chat() {
       if (countdownTimerRef.current) {
         clearTimeout(countdownTimerRef.current);
       }
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          console.error("停止語音識別時出錯", e);
+        }
+      }
       window.removeEventListener('mousemove', handleUserActivity);
       window.removeEventListener('keypress', handleUserActivity);
       window.removeEventListener('click', handleUserActivity);
@@ -183,6 +230,140 @@ export default function Chat() {
       window.removeEventListener('scroll', handleUserActivity);
     };
   }, [showCountdown, messages.length, IDLE_TIMEOUT]); // 確保依賴項都正確列出
+
+  // 改進的語音輸入功能
+  const startVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('您的瀏覽器不支持語音識別，請嘗試使用Chrome瀏覽器');
+      return;
+    }
+    
+    // 如果已經在錄音，則先停止
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error("停止現有語音識別時出錯", e);
+      }
+      recognitionRef.current = null;
+      setIsRecording(false);
+      setVoiceState('inactive');
+      return;
+    }
+    
+    // 重置閒置計時器
+    lastActivityRef.current = Date.now();
+    
+    // 使用標準SpeechRecognition或webkit前綴版本
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    // 儲存recognition實例以便後續清理
+    recognitionRef.current = recognition;
+    
+    // 優化語音識別設置
+    recognition.lang = 'cmn-Hant-TW'; // 更準確的繁體中文設置
+    recognition.continuous = false;    // 連續模式會導致多次結果
+    recognition.interimResults = true; // 啟用中間結果，提供更好的用戶反饋
+    recognition.maxAlternatives = 1;
+    
+    setIsRecording(true);
+    setVoiceState('listening');
+    setVoiceError('');
+    
+    // 語音識別開始
+    recognition.onstart = () => {
+      console.log('語音識別已啟動');
+      setIsRecording(true);
+      setVoiceState('listening');
+    };
+    
+    // 語音識別中間結果
+    recognition.onresult = (event) => {
+      console.log('收到語音結果事件', event);
+      setVoiceState('processing');
+      
+      const results = event.results;
+      if (!results || results.length === 0) {
+        console.log('沒有語音識別結果');
+        return;
+      }
+      
+      // 取得最新的識別結果
+      const latestResult = results[results.length - 1];
+      
+      // 檢查結果是否有效
+      if (!latestResult || latestResult.length === 0) {
+        console.log('識別結果無效');
+        return;
+      }
+      
+      const transcript = latestResult[0].transcript;
+      console.log('識別結果:', transcript, '可信度:', latestResult[0].confidence);
+      
+      // 只有當結果"最終確定"或信心值足夠高時更新輸入框
+      if (latestResult.isFinal || latestResult[0].confidence > 0.5) {
+        setInput(prev => {
+          const newInput = prev + transcript;
+          console.log('更新輸入框為:', newInput);
+          return newInput;
+        });
+      }
+    };
+    
+    // 語音識別錯誤處理
+    recognition.onerror = (event) => {
+      console.error('語音識別錯誤:', event.error, '詳細信息:', event);
+      setVoiceState('error');
+      setVoiceError(event.error);
+      
+      // 提供更明確的用戶反饋
+      let errorMessage = '';
+      if (event.error === 'no-speech') {
+        errorMessage = '未檢測到語音，請確保您的麥克風正常工作並嘗試再次說話';
+      } else if (event.error === 'audio-capture') {
+        errorMessage = '無法捕獲音頻，請確保您的設備有麥克風且已授權使用';
+      } else if (event.error === 'not-allowed') {
+        errorMessage = '語音識別權限被拒絕，請在瀏覽器設置中允許網站使用麥克風';
+      } else {
+        errorMessage = `語音識別出錯: ${event.error}`;
+      }
+      
+      console.error(errorMessage);
+      // 只有在非常嚴重的錯誤時才顯示彈窗，避免干擾用戶體驗
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        alert(errorMessage);
+      }
+      
+      setIsRecording(false);
+    };
+    
+    // 語音識別結束
+    recognition.onend = () => {
+      console.log('語音識別結束');
+      setVoiceState('inactive');
+      
+      // 如果沒有收到任何有效結果且不是錯誤狀態，顯示提示
+      if (isRecording && voiceState !== 'error') {
+        console.log('語音識別結束但未接收到文字');
+      }
+      
+      setIsRecording(false);
+      recognitionRef.current = null;
+    };
+    
+    // 嘗試開始語音識別
+    try {
+      recognition.start();
+      console.log('語音識別請求已發送');
+    } catch (error) {
+      console.error('啟動語音識別時出錯:', error);
+      setVoiceState('error');
+      setVoiceError(error.message);
+      alert('無法啟動語音識別: ' + error.message);
+      setIsRecording(false);
+    }
+  };
 
   // 用於處理發送消息的函數
   const handleSend = async () => {
@@ -199,6 +380,18 @@ export default function Chat() {
         clearTimeout(countdownTimerRef.current);
         countdownTimerRef.current = null;
       }
+    }
+    
+    // 停止語音識別
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error("停止語音識別時出錯", e);
+      }
+      recognitionRef.current = null;
+      setIsRecording(false);
+      setVoiceState('inactive');
     }
     
     // 停止任何正在進行的語音
@@ -322,6 +515,7 @@ export default function Chat() {
           )}
         </div>
         
+        {/* 新的帶有語音輸入的訊息輸入區域 */}
         <div className="p-4 bg-white">
           <div className="flex items-center space-x-2">
             <input
@@ -329,18 +523,49 @@ export default function Chat() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && handleSend()}
-              disabled={isLoading}
-              className="flex-1 p-4 rounded-full border focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Type A Message..."
+              disabled={isLoading || isRecording}
+              className={`flex-1 p-4 rounded-full border focus:outline-none focus:ring-2 ${
+                voiceState === 'listening' ? 'bg-red-50 ring-red-300' :
+                voiceState === 'processing' ? 'bg-yellow-50 ring-yellow-300' :
+                voiceState === 'error' ? 'bg-red-50 ring-red-300' :
+                'focus:ring-blue-500'
+              }`}
+              placeholder={
+                voiceState === 'listening' ? "正在聆聽您的聲音..." :
+                voiceState === 'processing' ? "正在處理您的語音..." :
+                voiceState === 'error' ? `錯誤: ${voiceError}` :
+                "Type A Message..."
+              }
             />
+            <button
+              onClick={startVoiceInput}
+              disabled={isLoading}
+              className={`p-3 rounded-full ${
+                voiceState === 'listening' ? 'bg-red-500 text-white animate-pulse' :
+                voiceState === 'processing' ? 'bg-yellow-500 text-white' :
+                voiceState === 'error' ? 'bg-red-400 text-white' :
+                'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              title={
+                voiceState === 'listening' ? "正在聆聽" :
+                voiceState === 'processing' ? "處理中" :
+                voiceState === 'error' ? "識別錯誤" :
+                "語音輸入"
+              }
+            >
+              <MicIcon />
+            </button>
             <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className={`p-4 ${
-                !input.trim() || isLoading ? 'text-gray-400' : 'text-blue-500 hover:text-blue-600'
+              className={`p-3 rounded-full ${
+                !input.trim() || isLoading 
+                  ? 'bg-gray-100 text-gray-400' 
+                  : 'bg-green-500 text-white hover:bg-green-600'
               }`}
+              title="發送訊息"
             >
-              Send
+              <SendIcon />
             </button>
           </div>
         </div>
