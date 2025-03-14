@@ -1,5 +1,4 @@
-以下是修正後的完整代碼：
-javascriptCopyimport { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 // SVG Icons Components
@@ -25,14 +24,14 @@ const SendIcon = () => (
   </svg>
 );
 
-// 焚燒模式圖標
+// Burn mode icon
 const BurnIcon = ({ active }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? "#ff4500" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
   </svg>
 );
 
-// 返回圖標
+// Back icon
 const BackIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -72,27 +71,27 @@ export default function Chat() {
   const countdownTimerRef = useRef(null);
   const lastActivityTimeRef = useRef(Date.now());
   
-  // 監控用戶不活動的情況
+  // Monitor user inactivity
   useEffect(() => {
     if (!burnModeActive) return;
     
-    // 清除任何現有的不活動計時器
+    // Clear any existing inactivity timer
     if (inactivityTimerRef.current) {
       clearInterval(inactivityTimerRef.current);
     }
     
-    // 如果焚燒確認已顯示，則不需要檢測不活動
+    // If burn confirmation is shown, no need to detect inactivity
     if (!showBurnConfirmation) {
-      // 設置不活動檢測
+      // Set up inactivity detection
       inactivityTimerRef.current = setInterval(() => {
         const now = Date.now();
         const timeElapsed = now - lastActivityTimeRef.current;
         
-        // 如果超過10秒無活動，則顯示確認並開始倒計時
+        // If more than 10 seconds of inactivity, show confirmation and start countdown
         if (timeElapsed >= 10000) {
           setShowBurnConfirmation(true);
           startCountdown();
-          // 一旦顯示確認，停止檢測不活動
+          // Once confirmation is shown, stop detecting inactivity
           clearInterval(inactivityTimerRef.current);
         }
       }, 1000);
@@ -105,20 +104,20 @@ export default function Chat() {
     };
   }, [burnModeActive, showBurnConfirmation]);
   
-  // 開始10秒倒計時
+  // Start 10 second countdown
   const startCountdown = () => {
     setCountdownSeconds(10);
     
-    // 清除任何現有的倒計時
+    // Clear any existing countdown
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
     }
     
-    // 設置新的倒計時，每秒減少1
+    // Set up new countdown, decreasing by 1 every second
     countdownTimerRef.current = setInterval(() => {
       setCountdownSeconds((prev) => {
         if (prev <= 1) {
-          // 時間到，執行焚燒
+          // Time's up, execute burn
           executeBurn();
           clearInterval(countdownTimerRef.current);
           return 0;
@@ -128,15 +127,15 @@ export default function Chat() {
     }, 1000);
   };
   
-  // 用戶活動處理函數
+  // User activity handler
   const handleUserActivity = () => {
-    // 只有在焚燒模式開啟且焚燒確認未顯示時才更新最後活動時間
+    // Only update last activity time if burn mode is on and confirmation is not shown
     if (burnModeActive && !showBurnConfirmation) {
       lastActivityTimeRef.current = Date.now();
     }
   };
   
-  // 設置用戶活動監聽器
+  // Set up user activity listeners
   useEffect(() => {
     const activityEvents = ['mousedown', 'keypress', 'mousemove', 'scroll', 'touchstart'];
     
@@ -153,12 +152,12 @@ export default function Chat() {
     };
   }, [burnModeActive, showBurnConfirmation]);
   
-  // 焚燒模式切換
+  // Toggle burn mode
   const toggleBurnMode = () => {
     const newBurnModeActive = !burnModeActive;
     setBurnModeActive(newBurnModeActive);
     
-    // 如果關閉焚燒模式，關閉確認視窗和停止所有計時器
+    // If turning off burn mode, close confirmation window and stop all timers
     if (!newBurnModeActive) {
       setShowBurnConfirmation(false);
       if (countdownTimerRef.current) {
@@ -168,46 +167,46 @@ export default function Chat() {
         clearInterval(inactivityTimerRef.current);
       }
     } else {
-      // 開啟焚燒模式時，重置最後活動時間
+      // When enabling burn mode, reset last activity time
       lastActivityTimeRef.current = Date.now();
     }
   };
   
-  // 執行焚燒
+  // Execute burn
   const executeBurn = () => {
-    // 重置消息為初始問候語
+    // Reset messages to initial greeting
     setMessages([
       { id: 1, text: `Hi, my name is ${friendData.name}!`, sender: 'ai' },
       { id: 2, text: 'Nice to meet you!', sender: 'ai' }
     ]);
     
-    // 關閉焚燒確認
+    // Close burn confirmation
     setShowBurnConfirmation(false);
     
-    // 重置最後活動時間
+    // Reset last activity time
     lastActivityTimeRef.current = Date.now();
     
-    // 停止倒計時
+    // Stop countdown
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
     }
   };
   
-  // 繼續對話（取消焚燒）
+  // Continue chatting (cancel burn)
   const continueChatting = () => {
-    // 關閉焚燒確認
+    // Close burn confirmation
     setShowBurnConfirmation(false);
     
-    // 更新活動時間戳
+    // Update activity timestamp
     lastActivityTimeRef.current = Date.now();
     
-    // 停止倒計時
+    // Stop countdown
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current);
     }
   };
   
-  // 在組件卸載時清除所有計時器
+  // Clean up all timers when component unmounts
   useEffect(() => {
     return () => {
       if (inactivityTimerRef.current) {
@@ -222,7 +221,7 @@ export default function Chat() {
     };
   }, []);
   
-  // 返回選擇頁面
+  // Go back to selection page
   const handleBack = () => {
     if (messages.length > 2 && !showExitConfirmation) {
       setShowExitConfirmation(true);
@@ -231,18 +230,18 @@ export default function Chat() {
     }
   };
   
-  // 確認返回
+  // Confirm exit
   const confirmExit = () => {
     navigate('/');
   };
   
-  // 取消返回
+  // Cancel exit
   const cancelExit = () => {
     setShowExitConfirmation(false);
   };
 
   const startRecording = async () => {
-    // 記錄用戶活動
+    // Record user activity
     if (burnModeActive && !showBurnConfirmation) {
       lastActivityTimeRef.current = Date.now();
     }
@@ -281,7 +280,7 @@ export default function Chat() {
   };
 
   const stopRecording = () => {
-    // 記錄用戶活動
+    // Record user activity
     if (burnModeActive && !showBurnConfirmation) {
       lastActivityTimeRef.current = Date.now();
     }
@@ -317,7 +316,7 @@ export default function Chat() {
 
   // Simulate AI response
   const simulateAIResponse = () => {
-    // 記錄用戶活動
+    // Record user activity
     if (burnModeActive && !showBurnConfirmation) {
       lastActivityTimeRef.current = Date.now();
     }
@@ -344,7 +343,7 @@ export default function Chat() {
   };
 
   const handleSend = () => {
-    // 記錄用戶活動
+    // Record user activity
     if (burnModeActive && !showBurnConfirmation) {
       lastActivityTimeRef.current = Date.now();
     }
@@ -382,7 +381,7 @@ export default function Chat() {
   };
 
   const handleInputChange = (e) => {
-    // 記錄用戶活動
+    // Record user activity
     if (burnModeActive && !showBurnConfirmation) {
       lastActivityTimeRef.current = Date.now();
     }
@@ -392,7 +391,7 @@ export default function Chat() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 relative">
-      {/* 頭部導航欄 - 移動設備上顯示 */}
+      {/* Header navigation bar - displayed on mobile */}
       <div className="md:hidden flex items-center justify-between bg-gray-800 p-2 text-white">
         <button onClick={handleBack} className="p-2">
           <BackIcon />
@@ -406,7 +405,7 @@ export default function Chat() {
         </button>
       </div>
       
-      {/* 側邊個人資料 */}
+      {/* Side profile */}
       <div className="w-full md:w-1/3 bg-gray-800 p-4 md:p-8 hidden md:block">
         <div className="flex justify-between items-center mb-4">
           <button 
@@ -447,7 +446,7 @@ export default function Chat() {
         )}
       </div>
       
-      {/* 右側聊天區域 - 保持原有設計 */}
+      {/* Right chat area */}
       <div className="flex-1 flex flex-col">
         <div className="flex-1 p-4 overflow-y-auto">
           {messages.map(msg => (
@@ -481,7 +480,7 @@ export default function Chat() {
             </div>
           ))}
           
-          {/* 添加載入指示器 */}
+          {/* Add loading indicator */}
           {isLoading && (
             <div className="flex justify-start mb-4">
               <img 
@@ -543,7 +542,7 @@ export default function Chat() {
         </div>
       </div>
       
-      {/* 焚燒確認彈窗 */}
+      {/* Burn confirmation dialog */}
       {showBurnConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
@@ -582,7 +581,7 @@ export default function Chat() {
         </div>
       )}
       
-      {/* 退出確認彈窗 */}
+      {/* Exit confirmation dialog */}
       {showExitConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
