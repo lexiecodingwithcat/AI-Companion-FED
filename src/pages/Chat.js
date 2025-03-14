@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+以下是修正後的完整代碼：
+javascriptCopyimport { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 // SVG Icons Components
@@ -446,7 +447,7 @@ export default function Chat() {
         )}
       </div>
       
-      {/* 聊天區域 */}
+      {/* 右側聊天區域 - 保持原有設計 */}
       <div className="flex-1 flex flex-col">
         <div className="flex-1 p-4 overflow-y-auto">
           {messages.map(msg => (
@@ -479,18 +480,20 @@ export default function Chat() {
               </div>
             </div>
           ))}
+          
+          {/* 添加載入指示器 */}
           {isLoading && (
             <div className="flex justify-start mb-4">
-              <img
-                src="/images/3d-character.avif"
+              <img 
+                src={`/api/placeholder/32/32`}
                 className="w-8 h-8 rounded-full mr-2"
                 alt={friendData.name}
               />
-              <div className="p-3 rounded-2xl bg-white">
+              <div className="max-w-[70%] p-3 rounded-2xl bg-white">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                  <div className="h-2 w-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
                 </div>
               </div>
             </div>
@@ -515,8 +518,10 @@ export default function Chat() {
             />
             <button
               onClick={isRecording ? stopRecording : startRecording}
-              className={`p-4 ${isRecording ? 'text-red-500 hover:text-red-600' : 'text-gray-500 hover:text-gray-600'}`}
               disabled={isLoading}
+              className={`p-4 ${
+                isRecording ? 'text-red-500 hover:text-red-600' : 'text-gray-500 hover:text-gray-600'
+              }`}
             >
               {isRecording ? (
                 <div className="flex items-center">
