@@ -18,7 +18,10 @@ export default function RoleSelection() {
 
   const handleConfirm = () => {
     if (selectedFriend) {
-      navigate('/chat', { state: { friend: selectedFriend } });
+      // 找到選定的朋友對象
+      const selectedFriendObj = friends.find(friend => friend.id === selectedFriend);
+      // 傳遞朋友對象，包含ID、名稱和描述
+      navigate('/chat', { state: { friend: selectedFriendObj } });
     }
   };
 
