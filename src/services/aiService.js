@@ -15,7 +15,8 @@ export async function getAIResponse(prompt) {
 async function callGeminiAI(prompt) {
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-exp-1206:generateContent?key=${config.geminiApiKey}`,
+    // `https://generativelanguage.googleapis.com/v1beta/models/gemini-exp-1206:generateContent?key=${config.geminiApiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent?key=${config.geminiApiKey}`,
     {
 
       method: "POST",
@@ -71,12 +72,13 @@ async function callOllamaAI(prompt) {
 }
 
 // 新增的函數，用於獲取帶有情緒的回應
-export async function getAIResponseWithEmotion(prompt, character) {
+export async function getAIResponseWithEmotion(prompt, character, persona) {
   // 使用你現有的 AI 引擎設置
+  console.log("AI 引擎設置:", config.aiEngine);
   if (config.aiEngine === "test") {
-    return callGeminiAIWithEmotion(prompt, character);
+    return callGeminiAIWithEmotion(prompt, character, persona);
   } else if (config.aiEngine === "prd") {
-    return callOllamaAIWithEmotion(prompt, character);
+    return callOllamaAIWithEmotion(prompt, character, persona);
   } else {
     return {
       message: "Invalid AI engine setting.",
@@ -86,37 +88,38 @@ export async function getAIResponseWithEmotion(prompt, character) {
 }
 
 // 修改後的 Gemini AI 調用，返回帶有情緒的回應
-async function callGeminiAIWithEmotion(prompt, character) {
+async function callGeminiAIWithEmotion(prompt, character, persona) {
   try {
     const systemInstruction = `
-      你現在是一個名為${character}的AI角色。
-      請根據用戶的消息回覆，並表達相應的情緒。
+      You are now an AI character named ${character} who is a ${persona}. Please respond the user's message and express the corresponding emotion.
+      Please reply in JSON format with two elements: "message" for your plain reply without emoji, ""emotion" forEmotion code.
       
-      請以JSON格式回覆，格式如下：
-      {
-        "message": "你的回覆文字",
-        "emotion": "情緒代碼"
-      }
+      The emotion code can only be one of the following:
+      "dance" for joyful, excited or satisfied feelings;
+      "idontknow" for dissatisfied, disappointed or angry;
+      "no" for surprised or shocked;
+      "idle" or "walk" or "talking" for a neutral emotional state;
       
-      情緒代碼只能是以下之一：
-      - happy：當你感到開心、興奮或滿足時
-      - angry：當你感到不滿、失望或憤怒時
-      - surprised：當你感到驚訝或震驚時
-      - idle：當你處於中性情緒時
-      
-      確保你的回覆是有趣且符合角色的！`;
+      Ensure your reply is engaging and fits the character's personality!`;
     
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-exp-1206:generateContent?key=${config.geminiApiKey}`,
+      // `https://generativelanguage.googleapis.com/v1beta/models/gemini-exp-1206:generateContent?key=${config.geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-pro-exp-02-05:generateContent?key=${config.geminiApiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          "system_instruction": {
+            "parts": [
+              {
+                "text": systemInstruction
+              }
+            ]
+          },          
           contents: [
             {
               parts: [
-                { text: systemInstruction },
-                { text: `用戶輸入：${prompt}` }
+                { text: prompt }
               ]
             }
           ],
@@ -169,7 +172,7 @@ async function callGeminiAIWithEmotion(prompt, character) {
 }
 
 // 修改後的 Ollama AI 調用，返回帶有情緒的回應
-async function callOllamaAIWithEmotion(prompt, character) {
+async function callOllamaAIWithEmotion(prompt, character, persona) {
   try {
     // Encode the username and password for Basic Auth
     const authString = `${config.ngrokUsername}:${config.ngrokPassword}`;
@@ -255,10 +258,10 @@ async function callOllamaAIWithEmotion(prompt, character) {
 }
 
 // 用於測試的模擬 AI 回應函數
-export function simulateAIResponse(prompt, character) {
+export function simulateAIResponse(prompt, character, persona) {
   // 簡單的測試回應，使用與動畫匹配的情緒代碼
   const responses = [
-    { message: `我是${character}！很高興認識你！`, emotion: "greet" },
+    { message: `我是${character}我是一個${persona}！很高興認識你！`, emotion: "greet" },
     { message: "這讓我有點困惑...", emotion: "idontknow" },
     { message: "我不太同意這個觀點。", emotion: "no" },
     { message: "我理解你的意思。", emotion: "talking" },

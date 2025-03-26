@@ -54,9 +54,9 @@ export default function Chat() {
   
   // 倒數焚燒功能相關狀態
   const [isIdle, setIsIdle] = useState(false);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(60);
   const [showCountdown, setShowCountdown] = useState(false);
-  const IDLE_TIMEOUT = 10000; // 10秒閒置時間（毫秒）
+  const IDLE_TIMEOUT = 60000; // 10秒閒置時間（毫秒）
   
   const idleTimerRef = useRef(null);
   const countdownTimerRef = useRef(null);
@@ -65,7 +65,9 @@ export default function Chat() {
   
   const location = useLocation();
   const friend = location.state?.friend || 'sophia';
-
+  const persona = location.state?.persona || 'learner';
+  // console.log('Selected friend:', friend);
+  // console.log('Current persona:', persona);
   // 添加useEffect來監聽倒數變化
   useEffect(() => {
     console.log(`Countdown changed to: ${countdown}`);
@@ -415,13 +417,14 @@ export default function Chat() {
       
       // 測試階段使用模擬回應
       // 當 API 準備好時，可以切換為 getAIResponseWithEmotion
-      const useRealAPI = false; // 設置為 true 當你準備好使用實際 API
+      // const useRealAPI = false; // 設置為 true 當你準備好使用實際 API
+      const useRealAPI = true; // 設置為 true 當你準備好使用實際 API
       
       if (useRealAPI) {
-        response = await getAIResponseWithEmotion(input, friend);
+        response = await getAIResponseWithEmotion(input, friend, persona);
       } else {
         // 使用模擬回應進行測試
-        response = simulateAIResponse(input, friend);
+        response = simulateAIResponse(input, friend, persona);
       }
       
       // 添加 AI 回應到聊天
@@ -483,7 +486,8 @@ export default function Chat() {
             >
               {msg.sender === 'ai' && (
                 <img 
-                  src={`/api/placeholder/32/32`}
+                  src={`/images/3d-character.avif`}
+                  // src={`/api/placeholder/32/32`}
                   className="w-8 h-8 rounded-full mr-2"
                   alt={friend}
                 />
@@ -500,7 +504,8 @@ export default function Chat() {
           {isLoading && (
             <div className="flex justify-start mb-4">
               <img 
-                src={`/api/placeholder/32/32`}
+                // src={`/api/placeholder/32/32`}
+                src={`/images/3d-character.avif`}
                 className="w-8 h-8 rounded-full mr-2"
                 alt={friend}
               />
