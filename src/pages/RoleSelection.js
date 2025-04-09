@@ -7,13 +7,7 @@ export default function RoleSelection() {
   
   const friends = [
     { id: 'sophia', name: 'Sophia', desc: 'Intelligent learner with analytical skills' },
-    { id: 'oliver', name: 'Oliver', desc: 'Humorous socializer bringing joy' },
-    { id: 'mia', name: 'Mia', desc: 'Compassionate listener providing emotional support' },
-    { id: 'noah', name: 'Noah', desc: 'Creative thinker interested in art' },
-    { id: 'ava', name: 'Ava', desc: 'Independent dreamer facing challenges' },
-    { id: 'liam', name: 'Liam', desc: 'Caring supporter with strong empathy' },
-    { id: 'emma', name: 'Emma', desc: 'Outgoing communicator and loyal friend' },
-    { id: 'ethan', name: 'Ethan', desc: 'Energetic leader who loves adventure' }
+    { id: 'oliver', name: 'Oliver', desc: 'Humorous socializer bringing joy' }
   ];
 
   const handleConfirm = () => {
@@ -25,7 +19,7 @@ export default function RoleSelection() {
   return (
     <div className="min-h-screen bg-gray-800 p-8">
       <h1 className="text-3xl text-white text-center mb-8">Choose Your Friend</h1>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+      <div className="grid grid-cols-2 gap-8 max-w-6xl mx-auto">
         {friends.map(friend => (
           <div 
             key={friend.id}
