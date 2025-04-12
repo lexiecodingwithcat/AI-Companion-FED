@@ -12,7 +12,7 @@ export default function RoleSelection() {
 
   const handleConfirm = () => {
     if (selectedFriend) {
-      navigate('/chat', { state: { friend: selectedFriend } });
+      navigate('/chat', { state: { friend: selectedFriend.id, persona: selectedFriend.desc } });
     }
   };
 
@@ -24,10 +24,10 @@ export default function RoleSelection() {
           <div 
             key={friend.id}
             className={`bg-gray-700 rounded-lg p-4 cursor-pointer transition-all 
-              ${selectedFriend === friend.id 
+              ${selectedFriend?.id === friend.id 
                 ? 'ring-2 ring-orange-400 transform scale-105' 
                 : 'hover:ring-2 hover:ring-orange-400'}`}
-            onClick={() => setSelectedFriend(friend.id)}
+            onClick={() => setSelectedFriend(friend)}
           >
             <img 
               src="/images/3d-character.avif"
