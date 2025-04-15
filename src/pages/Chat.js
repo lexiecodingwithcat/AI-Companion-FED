@@ -56,7 +56,7 @@ export default function Chat() {
   const [isIdle, setIsIdle] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [showCountdown, setShowCountdown] = useState(false);
-  const IDLE_TIMEOUT = 60000; // 10秒閒置時間（毫秒）
+  const IDLE_TIMEOUT = 300000; // 300秒閒置時間（毫秒）
   
   const idleTimerRef = useRef(null);
   const countdownTimerRef = useRef(null);
@@ -154,7 +154,7 @@ export default function Chat() {
         setCountdown(currentCount - 1);
         // 遞迴調用自身以繼續倒數
         runCountdown(currentCount - 1);
-      }, 1000);
+      }, 10000);
     };
     
     // 啟動倒數計時
@@ -188,7 +188,7 @@ export default function Chat() {
         setIsIdle(true);
         startCountdown();
       }
-    }, 1000);
+    }, 10000);
     
     // 設置用戶活動事件監聽器
     const handleUserActivity = () => {
@@ -264,7 +264,8 @@ export default function Chat() {
     recognitionRef.current = recognition;
     
     // 優化語音識別設置
-    recognition.lang = 'cmn-Hant-TW'; // 更準確的繁體中文設置
+    // recognition.lang = 'cmn-Hant-TW'; // 更準確的繁體中文設置
+    recognition.lang = 'en-CA'; // 更準確的繁體中文設置
     recognition.continuous = false;    // 連續模式會導致多次結果
     recognition.interimResults = true; // 啟用中間結果，提供更好的用戶反饋
     recognition.maxAlternatives = 1;
