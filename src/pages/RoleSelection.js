@@ -30,7 +30,7 @@ export default function RoleSelection() {
             onClick={() => setSelectedFriend(friend)}
           >
             <img 
-              src="/images/3d-character.avif"
+              src={`/images/${friend.name}.png`}
               alt={friend.name}
               className="w-20 h-20 rounded-full mx-auto mb-2"
             />
